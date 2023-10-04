@@ -66,13 +66,30 @@ fun Home() {
         mutableStateOf("")
     }
 
-    val currencies = listOf("NGN", "USD", "CAD", "EUR")
+    val currencies = listOf(
+            Currency("NGN", 1.0),
+            Currency("USD", 0.001),
+            Currency("EUR", 0.0015),
+            Currency("GBP", 0.3),
+            Currency("CAD", 0.008),
+    )
 
-    LaunchedEffect(key1 = fromAmount, key2 = toAmount) {
+    LaunchedEffect(
+            key1 = arrayOf(fromAmount, from),
+            key2 = arrayOf(toAmount, to),
+            key3 = currentFocus
+    ) {
+        val referenceCurrency = currencies.find {
+            it.name == "NGN"
+        } ?: Currency("NGN", 1.0)
+        val fromRate = currencies.find { it.name == from }!!.rate
+        val toRate = currencies.find { it.name == to }!!.rate
         if (currentFocus == "from") {
-            toAmount = (fromAmount.ifEmpty { "0" }.toDouble() * 20).toString()
+            toAmount = (referenceCurrency.rate.div(fromRate).times(toRate))
+                    .times(fromAmount.ifEmpty { "0" }.toDouble()).toString()
         } else {
-            fromAmount = (toAmount.ifEmpty { "0" }.toDouble() / 20).toString()
+            fromAmount = referenceCurrency.rate.div(toRate).times(fromRate)
+                    .times(toAmount.ifEmpty { "0" }.toDouble()).toString()
         }
     }
 
@@ -84,24 +101,20 @@ fun Home() {
                     .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally,
     ) {
-        Text(text = "Cash Xchange",
-                fontSize = 36.sp,
-                fontWeight = FontWeight.Bold,
-                modifier = Modifier.padding(bottom = 16.dp)
-        )
+        Text(text = "Cash Xchange", fontSize = 36.sp, fontWeight = FontWeight.Bold,
+                modifier = Modifier.padding(bottom = 16.dp))
 
         Row(modifier = Modifier
                 .clickable {
                     trigger = "from"
                     isExpanded = !isExpanded
                 }
-                .border(1.dp, if (currentFocus == "from") Purple40 else Purple80, RoundedCornerShape(10.dp))
+                .border(1.dp, if (currentFocus == "from") Purple40 else Purple80,
+                        RoundedCornerShape(10.dp))
                 .clip(RoundedCornerShape(10.dp))
                 .padding(start = 4.dp, end = 14.dp)
-                .fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-        ) {
+                .fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically) {
             TextField(
                     value = fromAmount,
                     onValueChange = {
@@ -115,23 +128,15 @@ fun Home() {
                                 }
                             }
                             .weight(1f),
-                    colors = TextFieldDefaults.textFieldColors(
-                            containerColor = Color.Transparent,
+                    colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                    ),
-                    keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Decimal
-                    ),
+                            unfocusedIndicatorColor = Color.Transparent),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal),
 
                     )
-            Text(text = from,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
+            Text(text = from, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier
 
-                            .padding(start = 16.dp, end = 8.dp)
-            )
+                    .padding(start = 16.dp, end = 8.dp))
             ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
         }
 
@@ -142,19 +147,16 @@ fun Home() {
                     trigger = "to"
                     isExpanded = !isExpanded
                 }
-                .border(1.dp, if (currentFocus == "to") Purple40 else Purple80, RoundedCornerShape(10.dp))
+                .border(1.dp, if (currentFocus == "to") Purple40 else Purple80,
+                        RoundedCornerShape(10.dp))
                 .clip(RoundedCornerShape(10.dp))
                 .padding(start = 4.dp, end = 14.dp)
                 .fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-        ) {
-            TextField(
-                    value = toAmount,
-                    onValueChange = {
-                        toAmount = it
-                    },
-                    placeholder = { Text(text = "Amount", color = Color.Gray) },
+                verticalAlignment = Alignment.CenterVertically) {
+            TextField(value = toAmount, onValueChange = {
+                toAmount = it
+            }, placeholder = { Text(text = "Amount", color = Color.Gray) },
                     modifier = Modifier
                             .onFocusEvent {
                                 if (it.isFocused) {
@@ -162,22 +164,13 @@ fun Home() {
                                 }
                             }
                             .weight(1f),
-                    colors = TextFieldDefaults.textFieldColors(
-                            containerColor = Color.Transparent,
+                    colors = TextFieldDefaults.textFieldColors(containerColor = Color.Transparent,
                             focusedIndicatorColor = Color.Transparent,
-                            unfocusedIndicatorColor = Color.Transparent
-                    ),
-                    keyboardOptions = KeyboardOptions(
-                            keyboardType = KeyboardType.Decimal
-                    )
-            )
-            Text(text = to,
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    modifier = Modifier
+                            unfocusedIndicatorColor = Color.Transparent),
+                    keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+            Text(text = to, fontSize = 16.sp, fontWeight = FontWeight.Bold, modifier = Modifier
 
-                            .padding(start = 16.dp, end = 8.dp)
-            )
+                    .padding(start = 16.dp, end = 8.dp))
             ExposedDropdownMenuDefaults.TrailingIcon(expanded = isExpanded)
         }
 
@@ -198,29 +191,25 @@ fun Home() {
                     Text(text = "Select $trigger Currency",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            modifier = Modifier.padding(bottom = 16.dp)
-                    )
+                            modifier = Modifier.padding(bottom = 16.dp))
 
                     currencies.filter {
                         if (trigger == "from") {
-                            it != to
+                            it.name != to
                         } else {
-                            it != from
+                            it.name != from
                         }
                     }.forEach { currency ->
-                        Text(text = currency,
-                                fontSize = 16.sp,
-                                modifier = Modifier
-                                        .padding(bottom = 16.dp)
-                                        .clickable {
-                                            if (trigger == "from") {
-                                                from = currency
-                                            } else {
-                                                to = currency
-                                            }
-                                            isExpanded = false
-                                        }
-                        )
+                        Text(text = currency.name, fontSize = 16.sp, modifier = Modifier
+                                .padding(bottom = 16.dp)
+                                .clickable {
+                                    if (trigger == "from") {
+                                        from = currency.name
+                                    } else {
+                                        to = currency.name
+                                    }
+                                    isExpanded = false
+                                })
                     }
                 }
             }
@@ -233,18 +222,23 @@ fun Home() {
                         .padding(top = 120.dp),
 
                 ) {
-            Text(text = "Continue", style = TextStyle(color = Color.Black))
+            Text(text = "Refresh Rates", style = TextStyle(color = Color.White))
         }
 
         Spacer(modifier = Modifier.height(16.dp))
         currencies.forEach { currency ->
             //show exchange rate for each currency compared to usd
-            Text(text = "1$currency is 20NGN",
+            val referenceCurrency = currencies.find {
+                it.name == "NGN"
+            } ?: Currency("NGN", 1.0)
+            Text(text = "1${currency.name} is ${currency.rate.times(referenceCurrency.rate)}NGN",
                     fontSize = 18.sp,
                     modifier = Modifier.padding(top = 16.dp))
 
         }
 
     }
-
 }
+
+
+data class Currency(val name: String, val rate: Double)
