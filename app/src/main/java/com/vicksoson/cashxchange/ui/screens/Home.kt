@@ -240,9 +240,9 @@ fun Home() {
 
                     currencies.filter {
                         if (trigger == "from") {
-                            it.name != to
+                            it.symbol != to
                         } else {
-                            it.name != from
+                            it.symbol != from
                         }
                     }.forEach { currency ->
                         Text(text = currency.name,
@@ -342,7 +342,7 @@ fun Home() {
                 .padding(top = 60.dp),
         ) {
             if (processing) {
-                CircularProgressIndicator()
+                CircularProgressIndicator(color = Color.White)
             } else {
                 Text(text = "Convert", style = TextStyle(color = Color.White))
             }
