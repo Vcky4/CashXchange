@@ -2,6 +2,7 @@
 plugins {
     alias(libs.plugins.androidApplication)
     alias(libs.plugins.kotlinAndroid)
+    alias(libs.plugins.serialization)
 }
 
 android {
@@ -67,4 +68,19 @@ dependencies {
     androidTestImplementation(libs.ui.test.junit4)
     debugImplementation(libs.ui.tooling)
     debugImplementation(libs.ui.test.manifest)
+
+    //Fuel-core
+    implementation(libs.fuel)
+
+    //Fuel-packages
+    implementation(libs.fuel.android)
+    implementation(libs.fuel.livedata)
+    implementation(libs.fuel.coroutines)
+    implementation(libs.fuel.kotlinx.serialization)
+
+    // Kotlinx Serialization
+    implementation(libs.kotlinx.serialization.json)
+
+    // Timber
+    implementation(libs.timber)
 }
